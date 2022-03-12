@@ -1,0 +1,27 @@
+name: 'CI Test Workflow'
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Install dependencies
+        run: |
+          go version
+          go mod download
+      - name: Run build
+        run: |
+          go build -o bin/main
+      - name: Run tests
+        run: |
+          go test -v ./...
