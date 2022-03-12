@@ -14,6 +14,6 @@ The project working with trainer yaml file that declares environmental informati
 * [ ] Add CLI Commands
 * [ ] Implement generate method
 * [ ] Add Usage Manuel
-* [ ] Add Tests
+* [x] Add Tests
 * [ ] Add Go Releaser
 * [ ] Publish with Homebrew, etc.
