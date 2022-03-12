@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           go version
-          go mod download
+          go get ./...
       - name: Run build
         run: |
           go build -o bin/main
