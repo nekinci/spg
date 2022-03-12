@@ -16,12 +16,30 @@ type Field struct {
 	Environment map[string]Environment `yaml:"environment"`
 }
 
+func (field *Field) GetEnvironment(environment string) *Environment {
+	env := field.Environment[environment]
+	return &env
+}
+
 type Information struct {
 	Fields []Field `yaml:"fields"`
 }
 type V1TrainerYaml struct {
 	Version     string      `yaml:"version""`
 	Information Information `yaml:"information"`
+}
+
+func NewV1TrainerYaml(file string) (*V1TrainerYaml, error) {
+	y, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	var trainer V1TrainerYaml
+	err = yaml.Unmarshal(y, &trainer)
+	if err != nil {
+		return nil, err
+	}
+	return &trainer, nil
 }
 
 func main() {
