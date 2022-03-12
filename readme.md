@@ -17,3 +17,5 @@ The project working with trainer yaml file that declares environmental informati
 * [x] Add Tests
 * [ ] Add Go Releaser
 * [ ] Publish with Homebrew, etc.
+* [x] Add Github Actions
+* [ ] Add Dockerfile
