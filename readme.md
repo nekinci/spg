@@ -1,5 +1,8 @@
 ### Spring Boot Profile Yaml Generator
 
+![ci](https://github.com/nekinci/spring-profile-generator/actions/workflows/ci.yaml/badge.svg)
+
+
 Spring Boot Yaml Generator changes environment urls by given environment.
 If you develop your micro services with real environments and your yaml files not up to date probably you spend time fixing.
 
