@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestUrl_Hostname(t *testing.T) {
 	type fields struct {
@@ -225,6 +228,71 @@ func TestGenerator_generateString(t *testing.T) {
 			}
 			if got := g.generateString(tt.args.k, tt.args.v); got != tt.want {
 				t.Errorf("generateString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
+	type fields struct {
+		Trainer     *V1TrainerYaml
+		environment string
+	}
+	type args struct {
+		key string
+		m   map[string]interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   map[string]interface{}
+	}{
+		{
+			name: "Should Change Absoulute Value",
+			fields: fields{
+				Trainer: &V1TrainerYaml{
+					Version: "v1",
+					Information: Information{
+						Fields: []Field{},
+						AbsoluteConfig: []AbsoluteConfig{
+							{
+								Key: "crm-data-service.environment",
+								Environment: map[string]interface{}{
+									"oc":   "DEV",
+									"test": "TEST",
+									"prp":  "CLOUD_PRP",
+									"prod": "CLOUD_PROD",
+								},
+							},
+						},
+					},
+				},
+				environment: "prp",
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"crm-data-service": map[string]interface{}{
+						"environment": "DEV",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"crm-data-service": map[string]interface{}{
+					"environment": "CLOUD_PRP",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Generator{
+				Trainer:     tt.fields.Trainer,
+				environment: tt.fields.environment,
+			}
+			if got := g.GenerateForAbsoluteConfig(tt.args.key, tt.args.m); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GenerateForAbsoluteConfig() = %v, want %v", got, tt.want)
 			}
 		})
 	}

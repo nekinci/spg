@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 )
@@ -22,8 +23,15 @@ func (field *Field) GetEnvironment(environment string) *Environment {
 }
 
 type Information struct {
-	Fields []Field `yaml:"fields"`
+	Fields         []Field          `yaml:"fields"`
+	AbsoluteConfig []AbsoluteConfig `yaml:"absolute-configs"`
 }
+
+type AbsoluteConfig struct {
+	Key         string                 `yaml:"config-key"`
+	Environment map[string]interface{} `yaml:"environment"`
+}
+
 type V1TrainerYaml struct {
 	Version     string      `yaml:"version""`
 	Information Information `yaml:"information"`
@@ -43,6 +51,7 @@ func NewV1TrainerYaml(file string) (*V1TrainerYaml, error) {
 }
 
 func main() {
+	fmt.Println("Generating a new...")
 	m1 := NewMapWithFile("application.yml")
 	m2 := NewMapWithFile("application-test.yml")
 	m3 := MergeMaps(&m1, &m2)
@@ -50,7 +59,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	g := NewGenerator(trainer, "oc")
+	g := NewGenerator(trainer, "prod")
 	yaml := ToYaml(g.Generate(m3))
+	PrettyPrint(m3)
 	ioutil.WriteFile("result.yml", yaml, 0644)
 }

@@ -108,13 +108,67 @@ func NewGenerator(trainer *V1TrainerYaml, environment string) *Generator {
 }
 
 func (g *Generator) Generate(m map[string]interface{}) map[string]interface{} {
+	m = g.GenerateForFields(m)
+	m = g.GenerateForAbsoluteConfig("", m)
+	return m
+}
+
+func (g *Generator) GenerateForAbsoluteConfig(key string, m map[string]interface{}) map[string]interface{} {
+
+	for k, v := range m {
+		kk := getKey(key, k)
+		switch v.(type) {
+		case map[string]interface{}:
+			m[k] = g.GenerateForAbsoluteConfig(kk, v.(map[string]interface{}))
+		case interface{}:
+			m[k] = g.decideConfigValue(kk, v)
+		default:
+			panic("unsupported type")
+		}
+	}
+
+	return m
+}
+
+func getKey(key string, k string) string {
+	if key == "" {
+		return k
+	}
+	return key + "." + k
+}
+
+func (g *Generator) decideConfigValue(k string, v interface{}) interface{} {
+	config := g.getConfigValue(k)
+	if config == nil {
+		return v
+	}
+	return *config
+}
+
+func (g *Generator) getConfigValue(k interface{}) *interface{} {
+
+	if k == "" {
+		return nil
+	}
+
+	for _, config := range g.Trainer.Information.AbsoluteConfig {
+		if config.Key == k {
+			s := config.Environment[g.environment]
+			return &s
+		}
+	}
+
+	return nil
+}
+
+func (g *Generator) GenerateForFields(m map[string]interface{}) map[string]interface{} {
 
 	for k, v := range m {
 		switch v.(type) {
 		case string:
 			m[k] = g.generateString(k, v.(string))
 		case map[string]interface{}:
-			m[k] = g.Generate(v.(map[string]interface{}))
+			m[k] = g.GenerateForFields(v.(map[string]interface{}))
 		case []interface{}:
 			m[k] = v
 		case int:
