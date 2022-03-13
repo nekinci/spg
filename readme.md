@@ -21,4 +21,4 @@ The project working with trainer yaml file that declares environmental informati
 * [ ] Add Go Releaser
 * [ ] Publish with Homebrew, etc.
 * [x] Add Github Actions
-* [ ] Add Dockerfile
+* [x] Add Dockerfile
