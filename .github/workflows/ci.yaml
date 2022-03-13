@@ -1,4 +1,4 @@
-name: 'CI Test Workflow'
+name: 'Run Tests'
 on:
   push:
     branches:
