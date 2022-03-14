@@ -1,4 +1,6 @@
-### Spring Boot Profile Yaml Generator
+# Spring Boot Profile Yaml Generator
+
+-------------------------------------
 
 ![ci](https://github.com/nekinci/spring-profile-generator/actions/workflows/ci.yaml/badge.svg)
 
