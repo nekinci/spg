@@ -117,9 +117,12 @@ func (g *Generator) GenerateForAbsoluteConfig(key string, m map[string]interface
 
 	for k, v := range m {
 		kk := getKey(key, k)
+		fmt.Println(kk)
 		switch v.(type) {
 		case map[string]interface{}:
 			m[k] = g.GenerateForAbsoluteConfig(kk, v.(map[string]interface{}))
+		case []interface{}:
+			m[k] = g.GenerateForAbsoluteConfigForArray(kk, v.([]interface{}))
 		case interface{}:
 			m[k] = g.decideConfigValue(kk, v)
 		default:
@@ -128,6 +131,27 @@ func (g *Generator) GenerateForAbsoluteConfig(key string, m map[string]interface
 	}
 
 	return m
+}
+
+func (g *Generator) GenerateForAbsoluteConfigValue(k string, v interface{}) {
+
+}
+
+func (g *Generator) GenerateForAbsoluteConfigForArray(k string, arr []interface{}) []interface{} {
+
+	for index, v := range arr {
+		key := fmt.Sprintf("%s[%d]", k, index)
+		switch v.(type) {
+		case map[string]interface{}:
+			arr[index] = g.GenerateForAbsoluteConfig(key, (v).(map[string]interface{}))
+		case []interface{}:
+			arr[index] = g.GenerateForAbsoluteConfigForArray(key, v.([]interface{}))
+		case interface{}:
+			arr[index] = g.decideConfigValue(key, v)
+
+		}
+	}
+	return arr
 }
 
 func getKey(key string, k string) string {
@@ -153,6 +177,9 @@ func (g *Generator) getConfigValue(k interface{}) *interface{} {
 
 	for _, config := range g.Trainer.Information.AbsoluteConfig {
 		if config.Key == k {
+			s := config.Environment[g.environment]
+			return &s
+		} else if isMatchesForArray(config.Key, k.(string)) {
 			s := config.Environment[g.environment]
 			return &s
 		}

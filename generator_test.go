@@ -242,6 +242,61 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 		key string
 		m   map[string]interface{}
 	}
+
+	tr := V1TrainerYaml{
+		Version: "v1",
+		Information: Information{
+			Fields: []Field{},
+			AbsoluteConfig: []AbsoluteConfig{
+				{
+					Key: "crm-data-service.environment",
+					Environment: map[string]interface{}{
+						"oc":   "DEV",
+						"test": "TEST",
+						"prp":  "CLOUD_PRP",
+						"prod": "CLOUD_PROD",
+					},
+				},
+				{
+					Key: "keycloak.security[0].authRoles",
+					Environment: map[string]interface{}{
+						"oc":   "A",
+						"test": "B",
+						"prp":  "C",
+						"prod": "D",
+					},
+				},
+				{
+					Key: "a[0][1]",
+					Environment: map[string]interface{}{
+						"oc":   "B",
+						"test": "B",
+						"prp":  "B",
+						"prod": "B",
+					},
+				},
+				{
+					Key: "a[1][]",
+					Environment: map[string]interface{}{
+						"oc":   "B",
+						"test": "B",
+						"prp":  "B",
+						"prod": "B",
+					},
+				},
+				{
+					Key: "b[][]",
+					Environment: map[string]interface{}{
+						"oc":   "1",
+						"test": "1",
+						"prp":  "1",
+						"prod": "1",
+					},
+				},
+			},
+		},
+	}
+
 	tests := []struct {
 		name   string
 		fields fields
@@ -251,23 +306,7 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 		{
 			name: "Should Change Absoulute Value",
 			fields: fields{
-				Trainer: &V1TrainerYaml{
-					Version: "v1",
-					Information: Information{
-						Fields: []Field{},
-						AbsoluteConfig: []AbsoluteConfig{
-							{
-								Key: "crm-data-service.environment",
-								Environment: map[string]interface{}{
-									"oc":   "DEV",
-									"test": "TEST",
-									"prp":  "CLOUD_PRP",
-									"prod": "CLOUD_PROD",
-								},
-							},
-						},
-					},
-				},
+				Trainer:     &tr,
 				environment: "prp",
 			},
 			args: args{
@@ -281,6 +320,108 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 			want: map[string]interface{}{
 				"crm-data-service": map[string]interface{}{
 					"environment": "CLOUD_PRP",
+				},
+			},
+		},
+		{
+			name: "Should change absolute values II",
+			fields: fields{
+				Trainer:     &tr,
+				environment: "prp",
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"keycloak": map[string]interface{}{
+						"security": []interface{}{
+							map[string]interface{}{
+								"authRoles": "Z",
+							},
+							map[string]interface{}{
+								"securityCollections": "C",
+							},
+						},
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"keycloak": map[string]interface{}{
+					"security": []interface{}{
+						map[string]interface{}{
+							"authRoles": "C",
+						},
+						map[string]interface{}{
+							"securityCollections": "C",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Should change absolute array values",
+			fields: fields{
+				Trainer:     &tr,
+				environment: "prp",
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"a": []interface{}{
+						[]interface{}{
+							"A",
+							"b",
+						},
+						[]interface{}{
+							"B",
+							"C",
+						},
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{
+					[]interface{}{
+						"A",
+						"B",
+					},
+					[]interface{}{
+						"B",
+						"B",
+					},
+				},
+			},
+		},
+		{
+			name: "All array fields should be changed",
+			fields: fields{
+				Trainer:     &tr,
+				environment: "prp",
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"b": []interface{}{
+						[]interface{}{
+							"A",
+							"A",
+						},
+						[]interface{}{
+							"A",
+							"A",
+						},
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"b": []interface{}{
+					[]interface{}{
+						"1",
+						"1",
+					},
+					[]interface{}{
+						"1",
+						"1",
+					},
 				},
 			},
 		},
