@@ -168,14 +168,6 @@ func Test_isWildCardMatches(t *testing.T) {
 			},
 			want: false,
 		},
-		{
-			name: "",
-			args: args{
-				base:  "*",
-				value: "*",
-			},
-			want: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
