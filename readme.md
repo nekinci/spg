@@ -15,10 +15,18 @@ The project working with trainer yaml file that declares environmental informati
 * [x] Implement Merge Map with override strategy
 * [x] Declare Trainer Yaml Struct
 * [ ] Add CLI Commands
-* [ ] Implement generate method
+* [x] Implement generate method
+* [ ] Add wildcard feature for absolute configs
 * [ ] Add Usage Manuel
 * [x] Add Tests
 * [ ] Add Go Releaser
 * [ ] Publish with Homebrew, etc.
 * [x] Add Github Actions
 * [x] Add Dockerfile
+
+
+### Known Issues
+
+-------
+
+- **Don't handled yet metadata in trainer yaml file** (e.g. `information.fields.keys`)
