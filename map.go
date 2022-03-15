@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"os"
 	"reflect"
 )
 
@@ -22,12 +24,14 @@ func LoadFromFile(m *map[string]interface{}, path string) {
 	file, err := ioutil.ReadFile(path)
 
 	if err != nil {
-		panic(err)
+		fmt.Printf("Error reading file: %s\n", err)
+		os.Exit(1)
 	}
 
 	err = yaml.Unmarshal(file, m)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Error parsing YAML: %s\n", err)
+		os.Exit(1)
 	}
 
 }
@@ -164,7 +168,7 @@ func determineMapValue(oldValue, newValue interface{}) interface{} {
 
 }
 
-func PrettyPrint(m map[string]interface{}) string {
+func Pretty(m map[string]interface{}) string {
 	b, err := yaml.Marshal(m)
 	if err != nil {
 		panic(err)
