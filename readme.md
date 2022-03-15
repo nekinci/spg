@@ -1,7 +1,5 @@
 # Spring Boot Profile Yaml Generator
 
--------------------------------------
-
 ![ci](https://github.com/nekinci/spring-profile-generator/actions/workflows/ci.yaml/badge.svg)
 
 
@@ -29,6 +27,6 @@ The project working with trainer yaml file that declares environmental informati
 
 ### Known Issues
 
--------
-
 - **Don't handled yet metadata in trainer yaml file** (e.g. `information.fields.keys`)
+- **Don't handled yet wildcard feature** (e.g. `absolute-configs.config-key`)
+- **Config array selectors only support for primitive types. Don't supported for complex types.** (e.g. `maps or arrays`) 
