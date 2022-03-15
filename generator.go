@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -117,7 +118,6 @@ func (g *Generator) GenerateForAbsoluteConfig(key string, m map[string]interface
 
 	for k, v := range m {
 		kk := getKey(key, k)
-		fmt.Println(kk)
 		switch v.(type) {
 		case map[string]interface{}:
 			m[k] = g.GenerateForAbsoluteConfig(kk, v.(map[string]interface{}))
@@ -261,7 +261,8 @@ func checkEnvironment(trainer *V1TrainerYaml, environment string) {
 		}
 
 		if !isDefined {
-			panic("environment not defined")
+			fmt.Printf("environment %s is not defined in %v\n", environment, field.Keys)
+			os.Exit(1)
 		}
 	}
 }
