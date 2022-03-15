@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	homedir "github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"os"
 )
 
 type Environment struct {
@@ -51,16 +53,79 @@ func NewV1TrainerYaml(file string) (*V1TrainerYaml, error) {
 }
 
 func main() {
-	fmt.Println("Generating a new...")
-	m1 := NewMapWithFile("application.yml")
-	m2 := NewMapWithFile("application-test.yml")
-	m3 := MergeMaps(&m1, &m2)
-	trainer, err := NewV1TrainerYaml("trainer.yml")
-	if err != nil {
-		panic(err)
+	Execute()
+}
+
+func RunGenerate(args []string, profile, output string) {
+	var mlist []*map[string]interface{}
+
+	for _, v := range args {
+		m := NewMapWithFile(v)
+		mlist = append(mlist, &m)
 	}
-	g := NewGenerator(trainer, "prod")
+
+	m3 := MergeMaps(mlist...)
+	homeDir := getHomeDir()
+	trainer, err := NewV1TrainerYaml(homeDir + "/.spg/config.yml")
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		os.Exit(1)
+	}
+	g := NewGenerator(trainer, profile)
 	yaml := ToYaml(g.Generate(m3))
-	PrettyPrint(m3)
-	ioutil.WriteFile("result.yml", yaml, 0644)
+	ioutil.WriteFile(output, yaml, 0644)
+}
+
+func HandleConfig(action, path string) {
+	if action == "set" {
+		file, err := ioutil.ReadFile(path)
+		if err != nil {
+			fmt.Printf("Error reading file: %v", err)
+			os.Exit(1)
+		}
+		var config interface{}
+		err = yaml.Unmarshal(file, &config)
+		if err != nil {
+			fmt.Printf("Error parsing file: %v. It may be not yaml file.", err)
+			os.Exit(1)
+		}
+
+		homeDir := getHomeDir()
+
+		err = os.MkdirAll(homeDir+"/.spg", 0755)
+		if err != nil {
+			fmt.Printf("Error creating directory: %v", err)
+			os.Exit(1)
+		}
+
+		configPath := homeDir + "/.spg/config.yml"
+		err = ioutil.WriteFile(configPath, file, 0644)
+		if err != nil {
+			fmt.Printf("Error saving file: %v", err)
+			os.Exit(1)
+		}
+
+	} else if action == "unset" {
+		homeDir := getHomeDir()
+		configPath := homeDir + "/.spg/config.yml"
+		err := os.Remove(configPath)
+		if err != nil {
+			fmt.Printf("Error removing config: %v", err)
+			os.Exit(1)
+		}
+	} else if action == "print" {
+		homeDir := getHomeDir()
+		configPath := homeDir + "/.spg/config.yml"
+		m := NewMapWithFile(configPath)
+		fmt.Println(Pretty(m))
+	}
+}
+
+func getHomeDir() string {
+	h, err := homedir.Dir()
+	if err != nil {
+		fmt.Printf("Error getting home directory: %v", err)
+		os.Exit(1)
+	}
+	return h
 }
