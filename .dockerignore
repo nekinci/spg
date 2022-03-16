@@ -3,3 +3,4 @@ application.yml
 application-test.yml
 .idea
 .git
+node_modules

@@ -1,0 +1,29 @@
+{
+  "name": "spgtest",
+  "version": "1.1.4",
+  "description": "spg is a tool that generates spring profiles.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "go-npm install",
+    "preuninstall": "go-npm uninstall"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nekinci/spg.git"
+  },
+  "author": "nekinci",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nekinci/spg/issues"
+  },
+  "homepage": "https://github.com/nekinci/spg#readme",
+  "dependencies": {
+    "go-npm": "^0.1.9"
+  },
+  "goBinary": {
+    "name": "spg",
+    "path": "./bin",
+    "url": "https://github.com/nekinci/spg/releases/download/v{{version}}/spg_{{version}}-{{platform}}-{{arch}}.tar.gz"
+  }
+}
