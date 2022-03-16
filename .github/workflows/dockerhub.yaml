@@ -1,12 +1,8 @@
 name: Publish Docker Image
 on:
-  workflow_run:
-    workflows:
-      - "Run Tests"
-    branches:
-      - "main"
-    types:
-      - "completed"
+  push:
+    tags:
+      - '*'
 
 jobs:
   push_to_hub:
@@ -15,21 +11,16 @@ jobs:
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
-
+      - name: Extract Release Version
+        run: echo "RELEASE VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Log in to the Docker Hub
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        uses: docker/login-action@v2
         with:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_PASSWORD}}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          images: nekinci/spg
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: v.0.1
-          labels: v.0.1
+          tags: nekinci/spg:${{ env.RELEASE_VERSION }}
