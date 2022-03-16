@@ -4,6 +4,7 @@ on:
     tags:
       - '*'
 
+
 jobs:
   push_to_hub:
     name: Push to Docker Hub
