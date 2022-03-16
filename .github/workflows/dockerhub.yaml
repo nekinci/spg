@@ -4,9 +4,9 @@ on:
     tags:
       - '*'
 
-
 jobs:
   push_to_hub:
+    environment: OSS
     name: Push to Docker Hub
     runs-on: ubuntu-latest
     steps:
