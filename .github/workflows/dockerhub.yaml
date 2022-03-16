@@ -1,9 +1,12 @@
 name: Publish Docker Image
-
 on:
-  push:
+  workflow_run:
+    workflows:
+      - "Run Tests"
     branches:
-      - main
+      - "main"
+    types:
+      - "completed"
 
 jobs:
   push_to_hub:
