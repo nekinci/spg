@@ -1,6 +1,7 @@
 # spg 
 
-![ci](https://github.com/nekinci/spring-profile-generator/actions/workflows/ci.yaml/badge.svg)
+![ci](https://github.com/nekinci/spg/actions/workflows/ci.yaml/badge.svg)
+![ci](https://github.com/nekinci/spg/actions/workflows/dockerhub.yaml/badge.svg)
 
 `spg` is a tool that generates Spring profiles based on the current environment. 
 
