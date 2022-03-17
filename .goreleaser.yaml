@@ -23,3 +23,12 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+brews:
+  - name: spg
+    homepage: "https://github.com/nekinci/spg"
+    tap:
+      owner: nekinci
+      name: homebrew-tap
+    commit_author:
+      name: nekinci
+      email: niyaziekinci5050@gmail.com

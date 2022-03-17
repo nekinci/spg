@@ -24,6 +24,6 @@
   "goBinary": {
     "name": "spg",
     "path": "./bin",
-    "url": "https://github.com/nekinci/spg/releases/download/v{{version}}/spg_{{version}}-{{platform}}-{{arch}}.tar.gz"
+    "url": "https://github.com/nekinci/spg/releases/download/v{{version}}/spg_{{version}}_{{platform}}_{{arch}}.tar.gz"
   }
 }
