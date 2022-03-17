@@ -27,5 +27,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: nekinci/spg:${{ steps.meta.outputs.tags }}
-          labels: nekinci/spg:${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
