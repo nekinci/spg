@@ -293,6 +293,24 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 						"prod": "1",
 					},
 				},
+				{
+					Key: "*.bb.cc",
+					Environment: map[string]interface{}{
+						"oc":   "<new-value>",
+						"test": "<new-value>",
+						"prp":  "<new-value>",
+						"prod": "<new-value>",
+					},
+				},
+				{
+					Key: "1.*.5",
+					Environment: map[string]interface{}{
+						"oc":   "zzz",
+						"test": "zzz",
+						"prp":  "zzz",
+						"prod": "zzz",
+					},
+				},
 			},
 		},
 	}
@@ -421,6 +439,72 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 					[]interface{}{
 						"1",
 						"1",
+					},
+				},
+			},
+		},
+		{
+			name: "Should change * values",
+			fields: fields{
+				Trainer:     &tr,
+				environment: "test",
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"aa": map[string]interface{}{
+						"bb": map[string]interface{}{
+							"cc": "1",
+						},
+					},
+					"dd": map[string]interface{}{
+						"bb": map[string]interface{}{
+							"cc": "2",
+						},
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"aa": map[string]interface{}{
+					"bb": map[string]interface{}{
+						"cc": "<new-value>",
+					},
+				},
+				"dd": map[string]interface{}{
+					"bb": map[string]interface{}{
+						"cc": "<new-value>",
+					},
+				},
+			},
+		},
+		{
+			name: "Should change * values",
+			fields: fields{
+				Trainer:     &tr,
+				environment: "test",
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"1": map[string]interface{}{
+						"2": map[string]interface{}{
+							"3": map[string]interface{}{
+								"4": map[string]interface{}{
+									"5": 123,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"1": map[string]interface{}{
+					"2": map[string]interface{}{
+						"3": map[string]interface{}{
+							"4": map[string]interface{}{
+								"5": "zzz",
+							},
+						},
 					},
 				},
 			},

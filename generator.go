@@ -182,6 +182,9 @@ func (g *Generator) getConfigValue(k interface{}) *interface{} {
 		} else if isMatchesForArray(config.Key, k.(string)) {
 			s := config.Environment[g.environment]
 			return &s
+		} else if isWildCardMatches(config.Key, k.(string)) {
+			s := config.Environment[g.environment]
+			return &s
 		}
 	}
 
