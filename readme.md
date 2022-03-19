@@ -112,6 +112,12 @@ information:
         test: user
         prp: admin
         prod: admin
+    - config-key: "*.keycloak.b" # e.g: abc.keycloak.b, a.b.c.keycloak.b, keycloak.b means change all values of keycloak.b
+      environment:
+        oc: true
+        test: false
+        prp: true
+        prod: false
   fields:
     - keys: # metadata keys for decide which fields to change
         - a-service
@@ -135,6 +141,5 @@ information:
 
 ### Known Issues
 
-- **Don't handled yet metadata in trainer yaml file** (e.g. `information.fields.keys`)
-- **Don't handled yet wildcard feature** (e.g. `absolute-configs.config-key`)
-- **Config array selectors only support for primitive types. Don't supported for complex types.** (e.g. `maps or arrays`) 
+- *Don't handled yet metadata in trainer yaml file** (e.g. `information.fields.keys`)
+- *Config array selectors only support for primitive types. Don't supported for complex types.** (e.g. `maps or arrays`) 
