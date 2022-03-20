@@ -234,9 +234,12 @@ func TestGenerator_generateString(t *testing.T) {
 }
 
 func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
+	cond := "a.b.d == 10"
+	cond1 := "a.b.d == 5"
 	type fields struct {
 		Trainer     *V1TrainerYaml
 		environment string
+		currentMap  map[string]interface{}
 	}
 	type args struct {
 		key string
@@ -373,6 +376,105 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+		{
+			name: "Should not change when 'if condition' is not true",
+			fields: fields{
+				Trainer: &V1TrainerYaml{
+					Version: "v1",
+					Information: Information{
+						Fields: nil,
+						AbsoluteConfig: []AbsoluteConfig{
+							{
+								Key: "a.b.c",
+								Environment: map[string]interface{}{
+									"oc": "1", "test": "2", "prp": "3", "prod": "4",
+								},
+								Condition: &cond,
+							},
+						},
+					},
+				},
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+				},
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+				},
+			},
+			want: map[string]interface{}{
+				"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+			},
+		},
+		{
+			name: "Should change when 'if condition' is true",
+			fields: fields{
+				Trainer: &V1TrainerYaml{
+					Version: "v1",
+					Information: Information{
+						Fields: nil,
+						AbsoluteConfig: []AbsoluteConfig{
+							{
+								Key: "a.b.c",
+								Environment: map[string]interface{}{
+									"oc": "1", "test": "2", "prp": "3", "prod": "4",
+								},
+								Condition: &cond1,
+							},
+						},
+					},
+				},
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+				},
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+				},
+			},
+			want: map[string]interface{}{
+				"a": map[string]interface{}{"b": map[string]interface{}{"c": "2", "d": "5"}},
+			},
+		},
+		{
+			name: "Should change when 'if condition' is true with wildcard",
+			fields: fields{
+				Trainer: &V1TrainerYaml{
+					Version: "v1",
+					Information: Information{
+						Fields: nil,
+						AbsoluteConfig: []AbsoluteConfig{
+							{
+								Key: "*.b.c",
+								Environment: map[string]interface{}{
+									"oc": "1", "test": "2", "prp": "3", "prod": "4",
+								},
+								Condition: &cond1,
+							},
+						},
+					},
+				},
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+				},
+			},
+			args: args{
+				key: "",
+				m: map[string]interface{}{
+					"a": map[string]interface{}{"b": map[string]interface{}{"c": 3, "d": "5"}},
+				},
+			},
+			want: map[string]interface{}{
+				"a": map[string]interface{}{"b": map[string]interface{}{"c": "2", "d": "5"}},
 			},
 		},
 		{
@@ -515,9 +617,145 @@ func TestGenerator_GenerateForAbsoluteConfig(t *testing.T) {
 			g := &Generator{
 				Trainer:     tt.fields.Trainer,
 				environment: tt.fields.environment,
+				currentMap:  tt.fields.currentMap,
 			}
 			if got := g.GenerateForAbsoluteConfig(tt.args.key, tt.args.m); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GenerateForAbsoluteConfig() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGenerator_getConditionResult(t *testing.T) {
+	cond := "a.c == 3"
+	var tr = &V1TrainerYaml{
+		Version: "v1",
+		Information: Information{
+			Fields: nil,
+			AbsoluteConfig: []AbsoluteConfig{
+				{
+					Key: "a.b",
+					Environment: map[string]interface{}{
+						"oc":   "100",
+						"test": "100",
+						"prp":  "200",
+						"prod": "200",
+					},
+					Condition: &cond,
+				},
+			},
+		},
+	}
+	type fields struct {
+		Trainer     *V1TrainerYaml
+		environment string
+		currentMap  map[string]interface{}
+	}
+	type args struct {
+		cond string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   bool
+	}{
+		{
+			name: "Should return true",
+			fields: fields{
+				Trainer:     tr,
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": "2",
+						"c": "3",
+					},
+				},
+			},
+			args: args{
+				cond: cond,
+			},
+			want: true,
+		},
+		{
+			name: "Should return false",
+			fields: fields{
+				Trainer:     tr,
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": "22",
+						"c": "11",
+					},
+				},
+			},
+			args: args{
+				cond: "a == 2",
+			},
+			want: false,
+		},
+		{
+			name: "Should return false",
+			fields: fields{
+				Trainer:     tr,
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": "22",
+						"c": "11",
+					},
+				},
+			},
+			args: args{
+				cond: "a.b == abc",
+			},
+			want: false,
+		},
+		{
+			name: "Should return true",
+			fields: fields{
+				Trainer:     tr,
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": "22",
+						"c": "11",
+					},
+				},
+			},
+			args: args{
+				cond: "a.c == 11",
+			},
+			want: true,
+		},
+		{
+			name: "Should return true",
+			fields: fields{
+				Trainer:     tr,
+				environment: "test",
+				currentMap: map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": "22",
+						"c": "11",
+					},
+				},
+			},
+			args: args{
+				cond: "a.c == a.c",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Generator{
+				Trainer:     tt.fields.Trainer,
+				environment: tt.fields.environment,
+				currentMap:  tt.fields.currentMap,
+			}
+
+			if got := g.getConditionResult(tt.args.cond); got != tt.want {
+				t.Errorf("getConditionResult() = %v, want %v", got, tt.want)
 			}
 		})
 	}

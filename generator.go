@@ -9,6 +9,7 @@ import (
 type Generator struct {
 	Trainer     *V1TrainerYaml
 	environment string
+	currentMap  map[string]interface{}
 }
 
 type Url struct {
@@ -109,6 +110,7 @@ func NewGenerator(trainer *V1TrainerYaml, environment string) *Generator {
 }
 
 func (g *Generator) Generate(m map[string]interface{}) map[string]interface{} {
+	g.currentMap = m
 	m = g.GenerateForFields("", m)
 	m = g.GenerateForAbsoluteConfig("", m)
 	return m
@@ -162,14 +164,77 @@ func getKey(key string, k string) string {
 }
 
 func (g *Generator) decideConfigValue(k string, v interface{}) interface{} {
-	config := g.getConfigValue(k)
+	config := g.getConfig(k)
 	if config == nil {
 		return v
 	}
-	return *config
+
+	if config.Condition == nil {
+		vii := config.Environment[g.environment]
+		return vii
+	} else {
+		cond := *config.Condition
+		if g.getConditionResult(cond) {
+			vii := config.Environment[g.environment]
+			return vii
+		}
+		return v
+	}
+
 }
 
-func (g *Generator) getConfigValue(k interface{}) *interface{} {
+func (g *Generator) getConditionResult(cond string) bool {
+
+	// TODO: refactor it, add new operators but not for now
+	if strings.Contains(cond, "==") {
+		cond = strings.Replace(cond, " ", "", -1)
+		split := strings.Split(cond, "==")
+		if len(split) != 2 {
+			fmt.Printf("invalid condition: %s", cond)
+			os.Exit(1)
+		}
+
+		return g.getMapValueByKey(split[0]) == split[1] || split[0] == g.getMapValueByKey(split[1])
+	} else {
+		fmt.Printf("unsupported condition %s", cond)
+		os.Exit(1)
+	}
+
+	return false
+}
+
+func (g *Generator) getMapValueByKey(key string) interface{} {
+
+	if key == "" {
+		return nil
+	}
+
+	keys := strings.Split(key, ".")
+	m := g.currentMap
+	for i, k := range keys {
+		a := m[k]
+		if a == nil {
+			return nil
+		}
+
+		if v, ok := a.(map[string]interface{}); ok {
+			if i == len(keys)-1 {
+				return v
+			}
+			m = v
+		} else {
+			if i == len(keys)-1 {
+				return a
+			} else {
+				return nil
+			}
+		}
+	}
+
+	return m
+}
+
+func (g *Generator) getConfig(k interface{}) *AbsoluteConfig {
 
 	if k == "" {
 		return nil
@@ -177,14 +242,11 @@ func (g *Generator) getConfigValue(k interface{}) *interface{} {
 
 	for _, config := range g.Trainer.Information.AbsoluteConfig {
 		if config.Key == k {
-			s := config.Environment[g.environment]
-			return &s
+			return &config
 		} else if isMatchesForArray(config.Key, k.(string)) {
-			s := config.Environment[g.environment]
-			return &s
+			return &config
 		} else if isWildCardMatches(config.Key, k.(string)) {
-			s := config.Environment[g.environment]
-			return &s
+			return &config
 		}
 	}
 
