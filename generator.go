@@ -126,7 +126,7 @@ func (g *Generator) GenerateForAbsoluteConfig(key string, m map[string]interface
 		case interface{}:
 			m[k] = g.decideConfigValue(kk, v)
 		default:
-			panic("unsupported type")
+			m[k] = v
 		}
 	}
 
@@ -207,7 +207,7 @@ func (g *Generator) GenerateForFields(key string, m map[string]interface{}) map[
 		case bool:
 			m[k] = v
 		default:
-			panic(fmt.Sprintf("unsupported type %s %T", k, v))
+			m[k] = v
 		}
 	}
 
@@ -221,12 +221,37 @@ func (g *Generator) generateString(k, v string) string {
 	}
 
 	if !strings.Contains(v, "http://") && !strings.Contains(v, "https://") {
-		return v
+		text, ok := g.getText(v)
+		if !ok {
+			return v
+		}
+		return text
 	}
 
 	environmentUrl := g.getEnvironmentUrl(k, v)
 	currentUrl := NewUrl(v)
 	return fmt.Sprintf("%s://%s%s", environmentUrl.Scheme(), environmentUrl.Hostname(), currentUrl.Path())
+}
+
+func (g *Generator) getText(text string) (string, bool) {
+
+	if text == "" {
+		return "", false
+	}
+
+	field := g.findField(text)
+
+	if field == nil {
+		return "", false
+	}
+
+	if field.Type != "text" {
+		return "", false
+	}
+
+	environment := field.Environment[g.environment]
+
+	return environment.Value, true
 }
 
 func (g *Generator) getEnvironmentUrl(key, currentUrl string) Url {
@@ -255,11 +280,11 @@ func (g *Generator) getEnvironmentUrl(key, currentUrl string) Url {
 
 }
 
-func (g *Generator) findField(url string) *Field {
+func (g *Generator) findField(val string) *Field {
 
 	for _, field := range g.Trainer.Information.Fields {
 		for _, environment := range field.Environment {
-			if environment.Value != "" && strings.Contains(url, environment.Value) {
+			if environment.Value != "" && strings.Contains(val, environment.Value) {
 				return &field
 			}
 		}
