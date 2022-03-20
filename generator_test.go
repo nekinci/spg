@@ -154,6 +154,24 @@ func TestGenerator_generateString(t *testing.T) {
 						},
 					},
 				},
+				{
+					Keys: []string{"client-secret"},
+					Type: "text",
+					Environment: map[string]Environment{
+						"oc": {
+							Value: "test-client-secret",
+						},
+						"test": {
+							Value: "test-client-secret",
+						},
+						"prp": {
+							Value: "prp-client-secret",
+						},
+						"prod": {
+							Value: "prod-client-secret",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -218,6 +236,30 @@ func TestGenerator_generateString(t *testing.T) {
 				v: "http://test-service-test.cloud.com/rest/partyManagement",
 			},
 			want: "https://test-service.com/rest/partyManagement",
+		},
+		{
+			name: "Should change value with prod",
+			fields: fields{
+				Trainer:     &trainer,
+				environment: "prod",
+			},
+			args: args{
+				k: "key.secret",
+				v: "test-client-secret",
+			},
+			want: "prod-client-secret",
+		},
+		{
+			name: "Text",
+			fields: fields{
+				Trainer:     &trainer,
+				environment: "prod",
+			},
+			args: args{
+				k: "key.secret",
+				v: "test1-client-secret",
+			},
+			want: "test1-client-secret",
 		},
 	}
 	for _, tt := range tests {

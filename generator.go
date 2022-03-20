@@ -221,7 +221,7 @@ func (g *Generator) generateString(k, v string) string {
 	}
 
 	if !strings.Contains(v, "http://") && !strings.Contains(v, "https://") {
-		text, ok := g.getText(v)
+		text, ok := g.getText(k, v)
 		if !ok {
 			return v
 		}
@@ -233,7 +233,7 @@ func (g *Generator) generateString(k, v string) string {
 	return fmt.Sprintf("%s://%s%s", environmentUrl.Scheme(), environmentUrl.Hostname(), currentUrl.Path())
 }
 
-func (g *Generator) getText(text string) (string, bool) {
+func (g *Generator) getText(key, text string) (string, bool) {
 
 	if text == "" {
 		return "", false
@@ -242,6 +242,11 @@ func (g *Generator) getText(text string) (string, bool) {
 	field := g.findField(text)
 
 	if field == nil {
+		//f1, ok := g.getTextByKey(key)
+		//if !ok {
+		//	return "", false
+		//}
+		//return f1, true
 		return "", false
 	}
 
@@ -252,6 +257,22 @@ func (g *Generator) getText(text string) (string, bool) {
 	environment := field.Environment[g.environment]
 
 	return environment.Value, true
+}
+
+func (g *Generator) getTextByKey(k string) (string, bool) {
+
+	fieldByValue := g.findFieldByKey(k)
+	if fieldByValue == nil {
+		return "", false
+	}
+
+	if fieldByValue.Type != "text" {
+		return "", false
+	}
+
+	env := fieldByValue.Environment[g.environment]
+	return env.Value, true
+
 }
 
 func (g *Generator) getEnvironmentUrl(key, currentUrl string) Url {
