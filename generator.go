@@ -109,7 +109,7 @@ func NewGenerator(trainer *V1TrainerYaml, environment string) *Generator {
 }
 
 func (g *Generator) Generate(m map[string]interface{}) map[string]interface{} {
-	m = g.GenerateForFields(m)
+	m = g.GenerateForFields("", m)
 	m = g.GenerateForAbsoluteConfig("", m)
 	return m
 }
@@ -191,14 +191,15 @@ func (g *Generator) getConfigValue(k interface{}) *interface{} {
 	return nil
 }
 
-func (g *Generator) GenerateForFields(m map[string]interface{}) map[string]interface{} {
+func (g *Generator) GenerateForFields(key string, m map[string]interface{}) map[string]interface{} {
 
 	for k, v := range m {
+		kk := getKey(key, k)
 		switch v.(type) {
 		case string:
-			m[k] = g.generateString(k, v.(string))
+			m[k] = g.generateString(kk, v.(string))
 		case map[string]interface{}:
-			m[k] = g.GenerateForFields(v.(map[string]interface{}))
+			m[k] = g.GenerateForFields(kk, v.(map[string]interface{}))
 		case []interface{}:
 			m[k] = v
 		case int:
@@ -223,30 +224,64 @@ func (g *Generator) generateString(k, v string) string {
 		return v
 	}
 
-	environmentUrl := g.getEnvironmentUrl(v)
+	environmentUrl := g.getEnvironmentUrl(k, v)
 	currentUrl := NewUrl(v)
 	return fmt.Sprintf("%s://%s%s", environmentUrl.Scheme(), environmentUrl.Hostname(), currentUrl.Path())
 }
 
-func (g *Generator) getEnvironmentUrl(currentUrl string) Url {
+func (g *Generator) getEnvironmentUrl(key, currentUrl string) Url {
 	field := g.findField(currentUrl)
-	if field == nil {
+
+	if field != nil {
+		environment := field.GetEnvironment(g.environment)
+		if environment == nil {
+			return NewUrl(currentUrl)
+		}
+
+		return NewUrl(environment)
+	}
+
+	fieldByKey := g.findFieldByKey(key)
+	if fieldByKey == nil {
 		return NewUrl(currentUrl)
 	}
-	environment := field.GetEnvironment(g.environment)
+
+	environment := fieldByKey.GetEnvironment(g.environment)
 	if environment == nil {
 		return NewUrl(currentUrl)
 	}
 
 	return NewUrl(environment)
+
 }
 
 func (g *Generator) findField(url string) *Field {
 
 	for _, field := range g.Trainer.Information.Fields {
 		for _, environment := range field.Environment {
-			if strings.Contains(url, environment.Value) {
+			if environment.Value != "" && strings.Contains(url, environment.Value) {
 				return &field
+			}
+		}
+	}
+
+	return nil
+}
+
+func (g *Generator) findFieldByKey(key string) *Field {
+
+	for _, field := range g.Trainer.Information.Fields {
+		for _, k := range field.Keys {
+			kLength := len(k)
+			keyLength := len(key)
+			if kLength > keyLength {
+				if strings.Contains(k, key) {
+					return &field
+				}
+			} else {
+				if strings.Contains(key, k) {
+					return &field
+				}
 			}
 		}
 	}
