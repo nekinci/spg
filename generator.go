@@ -305,7 +305,7 @@ func (g *Generator) findField(val string) *Field {
 
 	for _, field := range g.Trainer.Information.Fields {
 		for _, environment := range field.Environment {
-			if environment.Value != "" && strings.Contains(val, environment.Value) {
+			if environment.Value != "" && NewUrl(val).Hostname() == environment.Value {
 				return &field
 			}
 		}
