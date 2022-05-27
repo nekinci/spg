@@ -28,6 +28,11 @@ If you want to use npm you can install it with npm:
 npm install -g spgjs
 ```
 
+If there is problem when you try to install with npm, may be you can try to install with this command:
+```bash
+sudo npm install --unsafe-perm -g spgjs
+```
+
 Or you can install it with manual installation of the project:
 
 You can visit [release page](https://github.com/nekinci/spg/releases) to see the latest version. After that you can download the project and add it to your PATH.

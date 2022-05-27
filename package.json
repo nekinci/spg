@@ -1,6 +1,6 @@
 {
   "name": "spgjs",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "spg is a tool that generates spring profiles.",
   "main": "index.js",
   "scripts": {
